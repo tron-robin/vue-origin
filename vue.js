@@ -573,7 +573,7 @@
   // detect devtools
   var devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
 
-  /* istanbul ignore next */
+  /* 是否是原生的判断 */
   function isNative(Ctor) {
     return typeof Ctor === 'function' && /native code/.test(Ctor.toString())
   }
@@ -2100,9 +2100,9 @@
       }
     };
 
-    initProxy = function initProxy(vm) {
+    initProxy = function initProxy(vm) {//改造实例的has方法
       if (hasProxy) {
-        // determine which proxy handler to use
+        // 确定要使用哪个代理处理程序
         var options = vm.$options;
         var handlers = options.render && options.render._withStripped
           ? getHandler
@@ -3752,7 +3752,7 @@
   function initEvents(vm) {
     vm._events = Object.create(null);
     vm._hasHookEvent = false;
-    // init parent attached events
+    // 初始化父附加事件
     var listeners = vm.$options._parentListeners;
     if (listeners) {
       updateComponentListeners(vm, listeners);
@@ -3895,10 +3895,10 @@
     }
   }
 
-  function initLifecycle(vm) {
+  function initLifecycle(vm) {//初始化生命周期的方法
     var options = vm.$options;
 
-    // locate first non-abstract parent
+    // 找到第一个非抽象父类
     var parent = options.parent;
     if (parent && !options.abstract) {
       while (parent.$options.abstract && parent.$parent) {
@@ -3906,7 +3906,6 @@
       }
       parent.$children.push(vm);
     }
-
     vm.$parent = parent;
     vm.$root = parent ? parent.$root : vm;
 
@@ -4971,14 +4970,13 @@
           vm//该实例
         );
       }
-      /* istanbul ignore else */
+      /* 改造实例的has方法 */
       {
         initProxy(vm);
       }
-      // expose real self
-      vm._self = vm;
-      initLifecycle(vm);
-      initEvents(vm);
+      vm._self = vm;// 将自己赋值给自己
+      initLifecycle(vm);//初始化生命周期
+      initEvents(vm);//初始化
       initRender(vm);
       callHook(vm, 'beforeCreate');
       initInjections(vm); // resolve injections before data/props
@@ -11931,7 +11929,7 @@
   }
 
   Vue.compile = compileToFunctions;
-
+  new Vue();
   return Vue;//返回Vue构造函数
 
 }));
