@@ -10,12 +10,9 @@
 }(this, function () {
   'use strict';
 
-  /*  */
+  var emptyObject = Object.freeze({});// 就是个空对象
 
-  var emptyObject = Object.freeze({});
-
-  // These helpers produce better VM code in JS engines due to their
-  // explicitness and function inlining.
+  // 辅助函数
   function isUndef(v) {
     return v === undefined || v === null
   }
@@ -32,54 +29,43 @@
     return v === false
   }
 
-  /**
-   * Check if value is primitive.
-   */
+  // 是否是不为null或者undefined的基础数据类型
   function isPrimitive(value) {
     return (
       typeof value === 'string' ||
       typeof value === 'number' ||
-      // $flow-disable-line
       typeof value === 'symbol' ||
       typeof value === 'boolean'
     )
   }
 
-  /**
-   * 区分对象和基本JSON值
-   */
+  // 是否为不为null的对象
   function isObject(obj) {
     return obj !== null && typeof obj === 'object'
   }
 
-  /**
-   * 获取值的原始类型字符串，例如[object object]
-   */
+  // 获取值的原始类型字符串，例如[object object]
   var _toString = Object.prototype.toString;
 
   function toRawType(value) {
     return _toString.call(value).slice(8, -1)
   }
 
-  /**
-   * 严格的对象类型检查。仅对普通JavaScript对象返回true
-   */
+  // 严格的对象类型检查。仅对普通JavaScript对象返回true
   function isPlainObject(obj) {
     return _toString.call(obj) === '[object Object]'
   }
-
+  // 严格的对象类型检查。仅对普通正则对象返回true
   function isRegExp(v) {
     return _toString.call(v) === '[object RegExp]'
   }
 
-  /**
-   * Check if val is a valid array index.
-   */
+  // 检查val是否是一个有效的数组索引(大于等于0的整数，且不为正负无穷)
   function isValidArrayIndex(val) {
     var n = parseFloat(String(val));
     return n >= 0 && Math.floor(n) === n && isFinite(val)
   }
-
+  // 检查对象是否为promise对象
   function isPromise(val) {
     return (
       isDef(val) &&
@@ -88,9 +74,7 @@
     )
   }
 
-  /**
-   * Convert a value to a string that is actually rendered.
-   */
+  // 将对象转换为实际呈现的字符串
   function toString(val) {
     return val == null
       ? ''
@@ -99,18 +83,13 @@
         : String(val)
   }
 
-  /**
-   * Convert an input value to a number for persistence.
-   * If the conversion fails, return original string.
-   */
+  // 将一个字符串转换为数字，转换失败则返回原字符串
   function toNumber(val) {
     var n = parseFloat(val);
     return isNaN(n) ? val : n
   }
 
-  /**
-   * 创建一个映射并返回一个函数，用于检查该映射中是否有键
-   */
+  // 创建一个映射并返回一个函数，用于检查该映射中是否有键
   function makeMap(
     str,
     expectsLowerCase
@@ -125,19 +104,13 @@
       : function (val) { return map[val]; }
   }
 
-  /**
-   * 检查标签是否是内置标签
-   */
+  // 检查标签是否是内置标签
   var isBuiltInTag = makeMap('slot,component', true);
 
-  /**
-   * Check if an attribute is a reserved attribute.
-   */
+  // 检查属性是否是内置属性
   var isReservedAttribute = makeMap('key,ref,slot,slot-scope,is');
 
-  /**
-   * Remove an item from an array.
-   */
+  //  从数组里移除一个元素
   function remove(arr, item) {
     if (arr.length) {
       var index = arr.indexOf(item);
@@ -1008,9 +981,7 @@
     return ob
   }
 
-  /**
-   * Define a reactive property on an Object.
-   */
+  // 给对象定义一个有反应性的属性
   function defineReactive$$1(
     obj,
     key,
@@ -1019,6 +990,7 @@
     shallow
   ) {
     var dep = new Dep();
+    console.log(dep);
 
     var property = Object.getOwnPropertyDescriptor(obj, key);
     if (property && property.configurable === false) {
@@ -3469,29 +3441,20 @@
     }
   }
 
-  /*  */
-
-  function initRender(vm) {
-    vm._vnode = null; // the root of the child tree
-    vm._staticTrees = null; // v-once cached trees
+  function initRender(vm) {//初始化渲染
+    vm._vnode = null; // 设置dom树的根节点属性
+    vm._staticTrees = null; // 设置静态的dom树根节点属性
     var options = vm.$options;
-    var parentVnode = vm.$vnode = options._parentVnode; // the placeholder node in parent tree
-    var renderContext = parentVnode && parentVnode.context;
-    vm.$slots = resolveSlots(options._renderChildren, renderContext);
-    vm.$scopedSlots = emptyObject;
-    // bind the createElement fn to this instance
-    // so that we get proper render context inside it.
-    // args order: tag, data, children, normalizationType, alwaysNormalize
-    // internal version is used by render functions compiled from templates
+    var parentVnode = vm.$vnode = options._parentVnode; // 在父节点里空出一个位置
+    var renderContext = parentVnode && parentVnode.context;//要渲染的节点内容
+    vm.$slots = resolveSlots(options._renderChildren, renderContext);//处理插槽内容(可能还有子组件内容)
+    vm.$scopedSlots = emptyObject;//设置插槽属性为{}
+    // 将_c绑定给实例，这个函数可以根据参数()创建要渲染的内容并返回
     vm._c = function (a, b, c, d) { return createElement(vm, a, b, c, d, false); };
-    // normalization is always applied for the public version, used in
-    // user-written render functions.
+    // 将$createElement绑定给实例，这个函数可以根据参数()创建要渲染的内容并返回
     vm.$createElement = function (a, b, c, d) { return createElement(vm, a, b, c, d, true); };
-
-    // $attrs & $listeners are exposed for easier HOC creation.
-    // they need to be reactive so that HOCs using them are always updated
+   
     var parentData = parentVnode && parentVnode.data;
-
     /* istanbul ignore else */
     {
       defineReactive$$1(vm, '$attrs', parentData && parentData.attrs || emptyObject, function () {
@@ -3726,13 +3689,9 @@
     }
   }
 
-  /*  */
-
   function isAsyncPlaceholder(node) {
     return node.isComment && node.asyncFactory
   }
-
-  /*  */
 
   function getFirstComponentChild(children) {
     if (Array.isArray(children)) {
@@ -3744,10 +3703,6 @@
       }
     }
   }
-
-  /*  */
-
-  /*  */
 
   function initEvents(vm) {
     vm._events = Object.create(null);
@@ -4976,7 +4931,7 @@
       }
       vm._self = vm;// 将自己赋值给自己
       initLifecycle(vm);//初始化生命周期
-      initEvents(vm);//初始化
+      initEvents(vm);//初始化事件
       initRender(vm);
       callHook(vm, 'beforeCreate');
       initInjections(vm); // resolve injections before data/props
@@ -11929,7 +11884,6 @@
   }
 
   Vue.compile = compileToFunctions;
-  new Vue();
   return Vue;//返回Vue构造函数
 
 }));
